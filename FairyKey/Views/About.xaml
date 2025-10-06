@@ -10,8 +10,8 @@
             <StackPanel Margin="5">
                 <Image Source="/Assets/fairykey-icon-light-medium.png" Height="150" Margin="0, 0, -20, 0"/>
                 <TextBlock Text="Fairy Key" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" />
-                <TextBlock Text="Virtual Piano Sheet Scroller" FontSize="14" HorizontalAlignment="Center" Margin="0,0,0,0" />
-                <TextBlock Text="Version 1.0" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,10" Foreground="Gray" />
+                <TextBlock Text="a virtual piano sheet scroller" FontSize="14" HorizontalAlignment="Center" Margin="0,0,0,0" />
+                <TextBlock Text="Version 1.0.0" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,10" Foreground="Gray" />
                 <TextBlock FontSize="14" Height="20" HorizontalAlignment="Center" Margin="0,0,0,2" Foreground="Gray">
                     <Hyperlink NavigateUri="https://fairykey.app" RequestNavigate="Hyperlink_RequestNavigate">
                         fairykey.app
