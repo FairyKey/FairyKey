@@ -28,7 +28,7 @@
                         <Button Height="40" Content="Title" Style="{StaticResource LibrarySheetBtn}" />
                     </StackPanel>
                 </ScrollViewer>
-                <Label Visibility="Collapsed" x:Name="NoSongsLbl" Content="No songs added yet" HorizontalAlignment="Center" />
+                <Label Visibility="Collapsed" x:Name="NoSongsLbl" Content="No sheets added yet" HorizontalAlignment="Center" Foreground="{StaticResource White}" />
             </Grid>
         </Grid>
 
