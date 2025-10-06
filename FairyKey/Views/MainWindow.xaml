@@ -1,0 +1,153 @@
+﻿<Window x:Class="FairyKey.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialIcons="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
+        Title="Fairy Key" Height="600" Width="700" MinWidth="600" MinHeight="300"
+        Topmost="False">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" MinWidth="100" MaxWidth="200" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left panel with scroll -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="25" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Label Content="Library" HorizontalContentAlignment="Center" Background="{StaticResource Black}" Foreground="{StaticResource White}" Grid.Row="0" />
+            <Button x:Name="GoToDirectory" ToolTip="Go to Sheets directory" Width="25" HorizontalAlignment="Right" Margin="0, 0, 5, 0" Click="GoToDirectory_Click" Style="{StaticResource TopButton}" BorderBrush="Transparent">
+                <materialIcons:MaterialIcon Kind="Folder" Foreground="{StaticResource White}" />
+            </Button>
+            <Grid Grid.Row="1">
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Background="{StaticResource Black}">
+                    <StackPanel x:Name="SheetsLibraryStackPanel">
+                        <Button Height="40" Content="Title" Style="{StaticResource LibrarySheetBtn}" />
+                    </StackPanel>
+                </ScrollViewer>
+                <Label Visibility="Collapsed" x:Name="NoSongsLbl" Content="No songs added yet" HorizontalAlignment="Center" />
+            </Grid>
+        </Grid>
+
+        <!-- Resizable splitter -->
+        <GridSplitter Grid.Column="1"
+                  Width="7"
+                  Background="{StaticResource Black}"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  ResizeBehavior="PreviousAndNext"
+                  ResizeDirection="Columns"
+                  ShowsPreview="True" />
+
+        <!-- Right side -->
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <!-- Top bar with buttons -->
+            <Border Grid.Row="0" Background="{StaticResource Black}">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="8" ShadowDepth="2" Opacity="0.4" />
+                </Border.Effect>
+                <Grid>
+                    
+                    <!-- Play / restart buttons -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Button x:Name="PlayPauseBtn" ToolTip="Play" Click="PlayPauseBtn_Click" Height="45" Width="45" Style="{StaticResource TopButton}">
+                            <materialIcons:MaterialIcon Kind="Play" Width="40" Height="40" Foreground="{StaticResource White}" />
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="12, 0, 0, 12" />
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+
+                        <Button x:Name="RestartBtn" ToolTip="Restart" Click="RestartBtn_Click" Width="45" Height="45" Style="{StaticResource TopButton}">
+                            <materialIcons:MaterialIcon Kind="Replay" Width="40" Height="40" Foreground="{StaticResource White}" />
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="0, 12, 12, 0" />
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Sheet area -->
+            <Border Grid.Row="2" ClipToBounds="True" Background="{StaticResource White}">
+                <ScrollViewer x:Name="SheetScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel x:Name="SheetStackPanel" />
+                </ScrollViewer>
+            </Border>
+
+            <!-- Sheet info semi-transparent (overlays on topside of sheet area) -->
+            <Grid Grid.Row="2" Height="30" VerticalAlignment="Top" Background="#F2e0e2e6" IsHitTestVisible="False">
+                <Label x:Name="TitleLabel" Content="" HorizontalContentAlignment="Left" Background="Transparent" />
+                <Label x:Name="TransposeLabel" Content="Transpose: 0" HorizontalContentAlignment="Right" Background="Transparent" />
+            </Grid>
+
+            <!-- Top left buttons -->
+            <StackPanel Orientation="Horizontal">
+                <!-- New sheet button -->
+                <Button x:Name="NewSheetBtn" ToolTip="Add new Sheet" Style="{StaticResource TopButton}" HorizontalAlignment="Left" Width="35" Height="35" Margin="5, 0, 5, 0" Click="NewSheetBtn_Click" Background="{StaticResource Black}">
+                    <materialIcons:MaterialIcon Kind="PlaylistAdd" Width="25" Height="25" Foreground="{StaticResource White}" />
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="2" />
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                
+                <!-- Resize button -->
+                <Button x:Name="ResizeViewBtn" ToolTip="Auto resize window" HorizontalAlignment="Left" Width="35" Height="35" Click="ResizeViewBtn_Click" Style="{StaticResource TopButton}">
+                    <materialIcons:MaterialIcon Kind="ArrowExpandHorizontal" Width="25" Height="25" Foreground="{StaticResource White}" />
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="2" />
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+
+            <!-- Top right buttons -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                
+                <!-- Displays last pressed key -->
+                <Label Visibility="Visible" x:Name="PressedTest" Foreground="{StaticResource White}" Content="" Margin="0, 0, 5, 0" HorizontalContentAlignment="Right" VerticalAlignment="Center" />
+
+                <!-- Hamburger menu button (+ context menus) -->
+                <Button x:Name="HamburgerBtn" Style="{StaticResource TopButton}" BorderBrush="Transparent" Width="35" Height="35" Margin="0, 0, 5,0 " Click="HamburgerBtn_Click" ContextMenuService.IsEnabled="False">
+                    <materialIcons:MaterialIcon Kind="HamburgerMenu" Foreground="{StaticResource White}" Height="35" />
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="HamburgerMenu">
+                            <MenuItem Header="Pin (Always on top)" IsCheckable="True"
+                          x:Name="AlwaysOnTopMenuItem"
+                          Checked="AlwaysOnTopMenuItem_Checked"
+                          Unchecked="AlwaysOnTopMenuItem_Checked" 
+                          ToolTip="Pin the window to overlay on other programs"/>
+
+                            <MenuItem Header="Noob Mode" IsCheckable="True"
+                          x:Name="NoobModeMenuItem"
+                          Checked="ToggleNoobModeChkBox_Checked"
+                          Unchecked="ToggleNoobModeChkBox_Checked" 
+                          ToolTip="Non-shifted notes to count as correct notes"/>
+                            <Separator />
+                            <MenuItem Header="About" x:Name="AboutBtn" Click="AboutBtn_Click" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="12" />
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

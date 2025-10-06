@@ -1,0 +1,33 @@
+﻿<Window x:Class="FairyKey.About"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="About" Height="347" Width="240" ResizeMode="NoResize">
+    <Grid>
+        <Border Margin="2">
+            <StackPanel Margin="5">
+                <Image Source="Assets/fairykey-icon-light-medium.png" Height="150" Margin="0, 0, -20, 0"/>
+                <TextBlock Text="Fairy Key" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" />
+                <TextBlock Text="Virtual Piano Sheet Scroller" FontSize="14" HorizontalAlignment="Center" Margin="0,0,0,0" />
+                <TextBlock Text="Version 1.0" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,10" Foreground="Gray" />
+                <TextBlock FontSize="14" Height="20" HorizontalAlignment="Center" Margin="0,0,0,2" Foreground="Gray">
+                    <Hyperlink NavigateUri="https://fairykey.app" RequestNavigate="Hyperlink_RequestNavigate">
+                        fairykey.app
+                    </Hyperlink>
+                </TextBlock>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Image Source="Assets/github-mark-small.png" Height="20" Margin="0, 0, 5, 0" />
+                    <TextBlock VerticalAlignment="Center">
+                        <Hyperlink NavigateUri="https://github.com/FairyKey/FairyKey" RequestNavigate="Hyperlink_RequestNavigate">
+                            Github
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+                <TextBlock Text="@ikin-dev" FontSize="12" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
