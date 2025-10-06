@@ -5,7 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace FairyKey
+namespace FairyKey.Views
 {
     public partial class NewSongWindow : Window
     {

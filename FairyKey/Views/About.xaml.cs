@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace FairyKey
+namespace FairyKey.Views
 {
     public partial class About : Window
     {
