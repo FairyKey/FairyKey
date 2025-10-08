@@ -571,22 +571,15 @@ namespace FairyKey.Views
             transposeValue = 0;
             var trimmed = line.Trim();
 
-            // numbers like +2 or -2
-            var simpleMatch = Regex.Match(trimmed, @"^[+-]\d+$");
-            if (simpleMatch.Success && int.TryParse(simpleMatch.Value, out int value))
-            {
-                transposeValue = value;
+            // if line starts with +N or -N
+            var leadingMatch = Regex.Match(trimmed, @"^(?<value>[+-]\d+)");
+            if (leadingMatch.Success && int.TryParse(leadingMatch.Groups["value"].Value, out transposeValue))
                 return true;
-            }
 
-            // Tranpose word
-            string triggerTransposeLineWord = "transpose";
-            var transposeMatch = Regex.Match(trimmed, $@"\b{triggerTransposeLineWord}\b.*?([+-]\d+)", RegexOptions.IgnoreCase
-            ); if (transposeMatch.Success && int.TryParse(transposeMatch.Groups[1].Value, out value))
-            {
-                transposeValue = value;
+            // if line contains "transpose" followed by +N or -N anywhere
+            var transposeMatch = Regex.Match(trimmed, @"\btranspose\b.*?(?<value>[+-]\d+)", RegexOptions.IgnoreCase);
+            if (transposeMatch.Success && int.TryParse(transposeMatch.Groups["value"].Value, out transposeValue))
                 return true;
-            }
 
             return false;
         }
