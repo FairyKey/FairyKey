@@ -7,6 +7,9 @@ namespace FairyKey.Views
         public About()
         {
             InitializeComponent();
+            Version.Text = $"Version {AppInfo.Version}";
+            githubLink.NavigateUri = new System.Uri(AppInfo.GitHub);
+            websiteLink.NavigateUri = new System.Uri(AppInfo.Website);
         }
 
         private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
