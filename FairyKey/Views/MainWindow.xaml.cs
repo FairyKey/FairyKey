@@ -503,7 +503,7 @@ namespace FairyKey.Views
                 char c = line[i];
 
                 // Treat spaces and dashes as their own tokens ONLY if not inside a chord
-                if (c == ' ' || c == '-' || c == '\'')
+                if (c == ' ' || c == '-' || c == '\'' || c == '‌')
                 {
                     tokens.Add(c.ToString());
                     i++;
@@ -549,7 +549,7 @@ namespace FairyKey.Views
 
         private bool IsIgnoredChar(string token)
         {
-            return token == " " || token == "-" || token == "'";
+            return token == " " || token == "-" || token == "'" || token == "‌";
         }
 
         private char[] GetChordNotes(string chordToken)
@@ -560,7 +560,7 @@ namespace FairyKey.Views
             string chordContent = chordToken.Trim('[', ']');
 
             // Filter out spaces, dashes, and apostrophes to get only the actual notes
-            var notes = chordContent.Where(ch => ch != ' ' && ch != '-' && ch != '\'').ToArray();
+            var notes = chordContent.Where(ch => ch != ' ' && ch != '-' && ch != '\'' && ch != '‌').ToArray();
 
             return notes;
         }
