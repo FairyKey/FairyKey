@@ -565,23 +565,28 @@ namespace FairyKey.Views
             return notes;
         }
 
-        // Detect tranpose lines like "+3" or "(tranpose -2)"
+        // Transpose detection v2
+        private readonly string[] TransposeKeywords = new[] { "transpose", "transposition" };
         private bool TryParseTransposeLine(string line, out int transposeValue)
         {
             transposeValue = 0;
             var trimmed = line.Trim();
 
-            // if line starts with +N or -N
-            var leadingMatch = Regex.Match(trimmed, @"^(?<value>[+-]\d+)");
-            if (leadingMatch.Success && int.TryParse(leadingMatch.Groups["value"].Value, out transposeValue))
+            // check if + or - followed by digit
+            var numberMatch = Regex.Match(trimmed, @"[+-]\d+");
+            if (!numberMatch.Success || !int.TryParse(numberMatch.Value, out transposeValue))
+                return false; 
+
+            // if line is exactly something like +2 or -2, always valid
+            if (trimmed == numberMatch.Value)
                 return true;
 
-            // if line contains "transpose" followed by +N or -N anywhere
-            var transposeMatch = Regex.Match(trimmed, @"\btranspose\b.*?(?<value>[+-]\d+)", RegexOptions.IgnoreCase);
-            if (transposeMatch.Success && int.TryParse(transposeMatch.Groups["value"].Value, out transposeValue))
-                return true;
+            // if a keyword exists in addition
+            bool containsKeyword = TransposeKeywords.Any(keyword =>
+                Regex.IsMatch(trimmed, $@"\b{Regex.Escape(keyword)}\b", RegexOptions.IgnoreCase)
+            );
 
-            return false;
+            return containsKeyword;
         }
 
         #endregion Keyboard input vs Notes processing
