@@ -5,6 +5,7 @@ using Material.Icons;
 using Material.Icons.WPF;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -89,14 +90,13 @@ namespace FairyKey.Views
             }
 
             // skip all transpose lines (faded gray)
-            while (_currentLineIndex < _lines.Count && int.TryParse(_lines[_currentLineIndex].Trim(), out int newTranspose))
+            while (_currentLineIndex < _lines.Count && TryParseTransposeLine(_lines[_currentLineIndex], out int newTranspose))
             {
                 _transpose = newTranspose;
                 UpdateTransposeLabel();
                 _currentLineIndex++;
                 _currentCharIndex = 0;
 
-                // rerender sheet if not match, else update note highlighting
                 if (_tokenizedLines.Count != _lines.Count)
                     RenderSheetStack();
                 else
@@ -111,20 +111,18 @@ namespace FairyKey.Views
             var tokens = _tokenizedLines[_currentLineIndex];
 
             // Skip spaces or dashes at the start
-            while (_currentCharIndex < tokens.Count && (tokens[_currentCharIndex] == " " || tokens[_currentCharIndex] == "-"))
+            while (_currentCharIndex < tokens.Count && IsIgnoredChar(tokens[_currentCharIndex]))
             {
                 _currentCharIndex++;
             }
 
-            // On note hit
+            // Check if end of the line
             if (_currentCharIndex >= tokens.Count)
             {
-                // Move to next line if done
                 _currentLineIndex++;
                 _currentCharIndex = 0;
 
-                // Skip transpose lines
-                while (_currentLineIndex < _lines.Count && int.TryParse(_lines[_currentLineIndex].Trim(), out int newTranspose))
+                while (_currentLineIndex < _lines.Count && TryParseTransposeLine(_lines[_currentLineIndex], out int newTranspose))
                 {
                     _transpose = newTranspose;
                     UpdateTransposeLabel();
@@ -137,12 +135,8 @@ namespace FairyKey.Views
             }
 
             string currentToken = tokens[_currentCharIndex];
-
             var pressedKeys = GetPressedKeys(e);
-            PressedTest.Content = string.Join(",", pressedKeys); // Show pressed keys at the top right of the window
-
-            // Normalize comparison
-            string compareToken = currentToken;
+            PressedTest.Content = string.Join(",", pressedKeys);
 
             // if is chord
             if (currentToken.StartsWith("[") && currentToken.EndsWith("]"))
@@ -151,7 +145,7 @@ namespace FairyKey.Views
 
                 if (!_activeChords.ContainsKey(chordIndex))
                 {
-                    var chordChars = currentToken.Trim('[', ']').ToCharArray();
+                    var chordChars = GetChordNotes(currentToken);
 
                     if (_noobMode)
                         chordChars = chordChars
@@ -170,31 +164,60 @@ namespace FairyKey.Views
                         remainingKeys.Remove(key[0]);
                 }
 
+                // when no more remaining keys = chord completed
                 if (remainingKeys.Count == 0)
                 {
                     _currentCharIndex++;
                     _activeChords.Remove(chordIndex);
+
+                    // Skip ignored chars after completing chord
+                    while (_currentCharIndex < tokens.Count && IsIgnoredChar(tokens[_currentCharIndex]))
+                    {
+                        _currentCharIndex++;
+                    }
                 }
             }
-            else
+            // if single note
+            else if (!IsIgnoredChar(currentToken))
             {
-                if (pressedKeys.Contains(compareToken))
+                string compareToken = currentToken;
+
+                // check if any pressed key matches
+                bool matched = false;
+                foreach (var key in pressedKeys)
+                {
+                    if (key.Length == 1 && key[0].ToString().Equals(compareToken, StringComparison.OrdinalIgnoreCase))
+                    {
+                        matched = true;
+                        break;
+                    }
+                    //// fallback exact match method (pressedKeys should do this ideally)
+                    //if (key == compareToken)
+                    //{
+                    //    matched = true;
+                    //    break;
+                    //}
+                }
+
+                if (matched)
+                {
                     _currentCharIndex++;
+
+                    // skip ignored chars after matching
+                    while (_currentCharIndex < tokens.Count && IsIgnoredChar(tokens[_currentCharIndex]))
+                    {
+                        _currentCharIndex++;
+                    }
+                }
             }
 
-            // skip spaces/dashes after advancing
-            while (_currentCharIndex < tokens.Count && (tokens[_currentCharIndex] == " " || tokens[_currentCharIndex] == "-"))
-            {
-                _currentCharIndex++;
-            }
-
-            // move to next line if done
+            // move to next line once done with current line
             if (_currentCharIndex >= tokens.Count)
             {
                 _currentLineIndex++;
                 _currentCharIndex = 0;
 
-                while (_currentLineIndex < _lines.Count && int.TryParse(_lines[_currentLineIndex].Trim(), out int newTranspose))
+                while (_currentLineIndex < _lines.Count && TryParseTransposeLine(_lines[_currentLineIndex], out int newTranspose))
                 {
                     _transpose = newTranspose;
                     UpdateTransposeLabel();
@@ -392,7 +415,7 @@ namespace FairyKey.Views
             // Create note lines
             for (int i = 0; i < _lines.Count; i++)
             {
-                bool isTransposeLine = int.TryParse(_lines[i], out _);
+                bool isTransposeLine = TryParseTransposeLine(_lines[i], out _);
                 var tokens = _tokenizedLines[i];
                 string fullText = string.Join("", tokens);
 
@@ -479,8 +502,8 @@ namespace FairyKey.Views
             {
                 char c = line[i];
 
-                // Treat spaces and dashes as their own tokens
-                if (c == ' ' || c == '-')
+                // Treat spaces and dashes as their own tokens ONLY if not inside a chord
+                if (c == ' ' || c == '-' || c == '\'')
                 {
                     tokens.Add(c.ToString());
                     i++;
@@ -492,11 +515,13 @@ namespace FairyKey.Views
                     int end = line.IndexOf(']', i);
                     if (end != -1)
                     {
-                        tokens.Add(line.Substring(i, end - i + 1)); // include brackets
+                        string chordToken = line.Substring(i, end - i + 1); // include brackets
+                        tokens.Add(chordToken);
                         i = end + 1;
                     }
                     else
                     {
+                        // treat as single character
                         tokens.Add(c.ToString());
                         i++;
                     }
@@ -507,7 +532,6 @@ namespace FairyKey.Views
                     i++;
                 }
             }
-
             return tokens;
         }
 
@@ -521,6 +545,51 @@ namespace FairyKey.Views
             {
                 _tokenizedLines.Add(TokenizeLine(line));
             }
+        }
+
+        private bool IsIgnoredChar(string token)
+        {
+            return token == " " || token == "-" || token == "'";
+        }
+
+
+        private char[] GetChordNotes(string chordToken)
+        {
+            if (!chordToken.StartsWith("[") || !chordToken.EndsWith("]"))
+                return Array.Empty<char>();
+
+            string chordContent = chordToken.Trim('[', ']');
+
+            // Filter out spaces, dashes, and apostrophes to get only the actual notes
+            var notes = chordContent.Where(ch => ch != ' ' && ch != '-' && ch != '\'').ToArray();
+
+            return notes;
+        }
+
+        // Detect tranpose lines like "+3" or "(tranpose -2)"
+        private bool TryParseTransposeLine(string line, out int transposeValue)
+        {
+            transposeValue = 0;
+
+            if (string.IsNullOrWhiteSpace(line))
+                return false;
+
+            // Match +/- followed by a number (with optional whitespace)
+            var match = Regex.Match(line.Trim(), @"([+-])\s*(\d+)");
+
+            if (match.Success)
+            {
+                string sign = match.Groups[1].Value;
+                string number = match.Groups[2].Value;
+
+                if (int.TryParse(number, out int value))
+                {
+                    transposeValue = sign == "+" ? value : -value;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         #endregion Keyboard input vs Notes processing
@@ -829,8 +898,7 @@ namespace FairyKey.Views
             _lines = _currentSheet.Notes.ToList();
 
             // handle transpose lines
-            while (_currentLineIndex < _lines.Count &&
-                   int.TryParse(_lines[_currentLineIndex].Trim(), out int newTranspose))
+            while (_currentLineIndex < _lines.Count && TryParseTransposeLine(_lines[_currentLineIndex], out int newTranspose))
             {
                 _transpose = newTranspose;
                 _currentLineIndex++;
