@@ -552,7 +552,6 @@ namespace FairyKey.Views
             return token == " " || token == "-" || token == "'";
         }
 
-
         private char[] GetChordNotes(string chordToken)
         {
             if (!chordToken.StartsWith("[") || !chordToken.EndsWith("]"))
@@ -570,23 +569,23 @@ namespace FairyKey.Views
         private bool TryParseTransposeLine(string line, out int transposeValue)
         {
             transposeValue = 0;
+            var trimmed = line.Trim();
 
-            if (string.IsNullOrWhiteSpace(line))
-                return false;
-
-            // Match +/- followed by a number (with optional whitespace)
-            var match = Regex.Match(line.Trim(), @"([+-])\s*(\d+)");
-
-            if (match.Success)
+            // numbers like +2 or -2
+            var simpleMatch = Regex.Match(trimmed, @"^[+-]\d+$");
+            if (simpleMatch.Success && int.TryParse(simpleMatch.Value, out int value))
             {
-                string sign = match.Groups[1].Value;
-                string number = match.Groups[2].Value;
+                transposeValue = value;
+                return true;
+            }
 
-                if (int.TryParse(number, out int value))
-                {
-                    transposeValue = sign == "+" ? value : -value;
-                    return true;
-                }
+            // Tranpose word
+            string triggerTransposeLineWord = "transpose";
+            var transposeMatch = Regex.Match(trimmed, $@"\b{triggerTransposeLineWord}\b.*?([+-]\d+)", RegexOptions.IgnoreCase
+            ); if (transposeMatch.Success && int.TryParse(transposeMatch.Groups[1].Value, out value))
+            {
+                transposeValue = value;
+                return true;
             }
 
             return false;
