@@ -570,23 +570,20 @@ namespace FairyKey.Views
         private bool TryParseTransposeLine(string line, out int transposeValue)
         {
             transposeValue = 0;
+            var trimmed = line.Trim();
 
-            if (string.IsNullOrWhiteSpace(line))
+            // check for the word "transpose" OR a compact +number / -number
+            bool looksLikeTranspose = Regex.IsMatch(trimmed, @"transpose", RegexOptions.IgnoreCase)
+                                   || Regex.IsMatch(trimmed, @"[+-]\d+");
+
+            if (!looksLikeTranspose)
                 return false;
 
-            // Match +/- followed by a number (with optional whitespace)
-            var match = Regex.Match(line.Trim(), @"([+-])\s*(\d+)");
-
-            if (match.Success)
+            var numMatch = Regex.Match(trimmed, @"[+-]\d+");
+            if (numMatch.Success && int.TryParse(numMatch.Value, out int value))
             {
-                string sign = match.Groups[1].Value;
-                string number = match.Groups[2].Value;
-
-                if (int.TryParse(number, out int value))
-                {
-                    transposeValue = sign == "+" ? value : -value;
-                    return true;
-                }
+                transposeValue = value;
+                return true;
             }
 
             return false;
