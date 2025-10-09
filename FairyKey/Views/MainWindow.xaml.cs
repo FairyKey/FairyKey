@@ -248,17 +248,16 @@ namespace FairyKey.Views
 
         private void UpdateHighlighting()
         {
-            // Only update if highlighting changed
-            if (_lastHighlightedLine == _currentLineIndex && _lastHighlightedChar == _currentCharIndex)
-                return;
-
-            // Clear previous highlighting
-            if (_lastHighlightedLine >= 0 && _lastHighlightedLine < _renderedTextBlocks.Count)
+            // Clear all highlighting
+            for (int i = 0; i < _renderedTextBlocks.Count; i++)
             {
-                UpdateLineHighlighting(_lastHighlightedLine, -1);
+                if (i != _currentLineIndex)
+                {
+                    UpdateLineHighlighting(i, -1);
+                }
             }
 
-            // Apply new highlighting
+            // apply to current notes
             if (_currentLineIndex >= 0 && _currentLineIndex < _renderedTextBlocks.Count)
             {
                 UpdateLineHighlighting(_currentLineIndex, _currentCharIndex);
@@ -337,6 +336,88 @@ namespace FairyKey.Views
         #endregion Note highlighting
 
         #region Sheet rendering
+        private void MakeTextBlockClickable(TextBlock tb, int lineIndex)
+        {
+            tb.Cursor = System.Windows.Input.Cursors.Hand;
+
+            tb.MouseLeftButtonDown += (s, e) =>
+            {
+                // Get click position within the TextBlock
+                var clickPoint = e.GetPosition(tb);
+
+                // Find which character was clicked
+                int clickedCharIndex = GetCharacterIndexFromPoint(tb, clickPoint, lineIndex);
+
+                if (clickedCharIndex >= 0)
+                {
+                    JumpToPosition(lineIndex, clickedCharIndex);
+                }
+            };
+        }
+
+        private int GetCharacterIndexFromPoint(TextBlock tb, System.Windows.Point point, int lineIndex)
+        {
+            if (lineIndex < 0 || lineIndex >= _tokenizedLines.Count)
+                return -1;
+
+            var tokens = _tokenizedLines[lineIndex];
+            if (tokens.Count == 0)
+                return -1;
+
+            // estimate character position based on average character width
+            double averageCharWidth = tb.ActualWidth / _lineStates[lineIndex].FullText.Length;
+            int charPosition = (int)(point.X / averageCharWidth);
+            charPosition = Math.Max(0, Math.Min(charPosition, _lineStates[lineIndex].FullText.Length - 1)); // Clamp to valid range
+
+            // convert character position to token index
+            int currentPos = 0;
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                int tokenLength = tokens[i].Length;
+                if (charPosition >= currentPos && charPosition < currentPos + tokenLength)
+                {
+                    return i;
+                }
+                currentPos += tokenLength;
+            }
+
+            return tokens.Count - 1; // if last note one cicked return the last token
+        }
+
+        private void JumpToPosition(int lineIndex, int charIndex)
+        {
+            _activeChords.Clear();
+            _currentLineIndex = lineIndex;
+            _currentCharIndex = charIndex;
+
+            // skip to the next valid note/chord (not a space or dash)
+            var tokens = _tokenizedLines[_currentLineIndex];
+            while (_currentCharIndex < tokens.Count && IsIgnoredChar(tokens[_currentCharIndex]))
+            {
+                _currentCharIndex++;
+            }
+
+            // move to next line if at the end of the current line
+            if (_currentCharIndex >= tokens.Count)
+            {
+                _currentLineIndex++;
+                _currentCharIndex = 0;
+
+                // Skip transpose lines
+                while (_currentLineIndex < _lines.Count &&
+                       TryParseTransposeLine(_lines[_currentLineIndex], out int newTranspose))
+                {
+                    _transpose = newTranspose;
+                    UpdateTransposeLabel();
+                    _currentLineIndex++;
+                }
+            }
+
+            _lastHighlightedLine = -1;
+            _lastHighlightedChar = -1;
+            UpdateHighlighting();
+            AnimateCenterActiveLineStack();
+        }
 
         private void RenderSheetStack()
         {
@@ -437,6 +518,12 @@ namespace FairyKey.Views
                     Foreground = isTransposeLine ? UIStyles.FontColorFaded : UIStyles.FontColor,
                     TextWrapping = TextWrapping.NoWrap
                 };
+
+                // Make each note TextBlock in the line clickable
+                if (!isTransposeLine)
+                {
+                    MakeTextBlockClickable(tb, i);
+                }
 
                 _renderedTextBlocks.Add(tb);
                 SheetStackPanel.Children.Add(tb);
