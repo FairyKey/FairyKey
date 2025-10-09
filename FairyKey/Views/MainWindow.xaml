@@ -81,7 +81,7 @@
 
             <!-- Sheet area -->
             <Border Grid.Row="2" ClipToBounds="True" Background="{StaticResource White}">
-                <ScrollViewer x:Name="SheetScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
+                <ScrollViewer x:Name="SheetScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" PreviewMouseWheel="SheetScrollViewer_ZoomMouseWheel">
                     <StackPanel x:Name="SheetStackPanel" />
                 </ScrollViewer>
             </Border>

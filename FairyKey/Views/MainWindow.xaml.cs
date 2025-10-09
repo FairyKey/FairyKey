@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Input;
 
 namespace FairyKey.Views
 {
@@ -40,10 +41,10 @@ namespace FairyKey.Views
 
         // Config
         private bool _isPlaying = false;
-
         private int _transpose = 0;
         private bool _noobMode = false;
         private Sheet _currentSheet;
+        private double _fontSizeAdjustment = 0;
 
         public MainWindow()
         {
@@ -80,8 +81,8 @@ namespace FairyKey.Views
             if (!_isPlaying || _currentLineIndex >= _lines.Count)
                 return;
 
-            // Hotkeys
-            // Ctrl+R to reset current song during play mode
+            // Hotkeys - only works in play mode
+            // Ctrl+R to reset current song during play mode - Add similar to windows.input event later?
             if (e.Control && e.KeyCode == System.Windows.Forms.Keys.R)
             {
                 Dispatcher.Invoke(() => ResetCurrentSong());
@@ -450,7 +451,7 @@ namespace FairyKey.Views
                 {
                     Text = _currentSheet.Title,
                     FontFamily = UIStyles.NotesFont,
-                    FontSize = UIStyles.NotesFontSize + 6,
+                    FontSize = UIStyles.NotesFontSize + 6 + _fontSizeAdjustment,
                     FontWeight = FontWeights.Bold,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Foreground = UIStyles.FontColor,
@@ -467,7 +468,7 @@ namespace FairyKey.Views
                 {
                     Text = _currentSheet.Artist,
                     FontFamily = UIStyles.NotesFont,
-                    FontSize = UIStyles.NotesFontSize - 2,
+                    FontSize = UIStyles.NotesFontSize - 2 + _fontSizeAdjustment,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Foreground = UIStyles.UnderTitleFontColor,
                     Margin = new Thickness(0, 0, 0, 2)
@@ -482,7 +483,7 @@ namespace FairyKey.Views
                 {
                     Text = $"Sheet by {_currentSheet.Creator}",
                     FontFamily = UIStyles.NotesFont,
-                    FontSize = UIStyles.NotesFontSize - 2,
+                    FontSize = UIStyles.NotesFontSize - 2 + _fontSizeAdjustment,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Foreground = UIStyles.UnderTitleFontColor,
                     Margin = new Thickness(0, 0, 0, 15)
@@ -521,7 +522,7 @@ namespace FairyKey.Views
                 {
                     Text = fullText,
                     FontFamily = UIStyles.NotesFont,
-                    FontSize = UIStyles.NotesFontSize,
+                    FontSize = UIStyles.NotesFontSize + _fontSizeAdjustment,
                     FontWeight = FontWeights.Normal,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Margin = new Thickness(0, 8, 0, 8),
@@ -579,6 +580,28 @@ namespace FairyKey.Views
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
             };
             SheetScrollViewer.BeginAnimation(ScrollViewerBehavior.VerticalOffsetProperty, anim);
+        }
+
+        private void UpdateFontSizes()
+        {
+            foreach (var element in SheetStackPanel.Children)
+            {
+                if (element is TextBlock tb)
+                {       // Title
+                    if (tb.FontSize == UIStyles.NotesFontSize + 6)
+                    {
+                        tb.FontSize = UIStyles.NotesFontSize + 6 + _fontSizeAdjustment;
+                    }  // Artist/Creator
+                    else if (tb.FontSize == UIStyles.NotesFontSize - 2 || tb.FontSize == UIStyles.NotesFontSize - 2 + _fontSizeAdjustment)
+                    {
+                        tb.FontSize = UIStyles.NotesFontSize - 2 + _fontSizeAdjustment;
+                    }
+                    else // notes
+                    {
+                        tb.FontSize = UIStyles.NotesFontSize + _fontSizeAdjustment;
+                    }
+                }
+            }
         }
 
         #endregion Sheet rendering
@@ -1144,6 +1167,22 @@ namespace FairyKey.Views
             var aboutWindow = new About();
             aboutWindow.Owner = this;
             aboutWindow.Show();
+        }
+
+        private void SheetScrollViewer_ZoomMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            if (Keyboard.Modifiers == ModifierKeys.Control) // ctrl held
+            {
+                e.Handled = true; // prevent normal scrolling
+
+                double delta = e.Delta / 60.0;
+                _fontSizeAdjustment += delta; // delta 120 (2 points per notch)
+
+                // limit to -10 - +20
+                _fontSizeAdjustment = Math.Max(-10, Math.Min(20, _fontSizeAdjustment));
+
+                UpdateFontSizes();
+            }
         }
 
         #endregion UI event handlers
