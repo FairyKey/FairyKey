@@ -75,8 +75,18 @@ To add a transposition indicator in a song, simply add it as a single line start
 ```
 +2
 ```
-The default transposition is always `0`. Transpositions can be added anywhere between or before notation lines.
-> Additional text in the transposition indicator is currently not supported.
+Without specifying, the default transposition is always `0`. Transpositions can be added anywhere between or before notation lines.
+
+Additional formats also [supported](https://github.com/FairyKey/FairyKey/discussions/3):
+```
+Transpose +1
+Transposition: +2
+-2 (Transpose 5)
+transpose: +2
+(Transpose +3)
+transposition -3
+```
+
 
 ### Adding Notes
 Lastly, notes can be added after the metadata freely using virtual piano notation. Fairy Key recognizes playable notes and ignores non-playable notes such as spaces. Currently supported formats for chords are `[ ]` and `-` for spaces/pauses.
