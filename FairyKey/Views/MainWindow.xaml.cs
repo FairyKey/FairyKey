@@ -389,6 +389,16 @@ namespace FairyKey.Views
             _activeChords.Clear();
             _currentLineIndex = lineIndex;
             _currentCharIndex = charIndex;
+            _transpose = 0;
+
+            for (int i = 0; i < _currentLineIndex; i++) // recalculate transpose
+            {
+                if (TryParseTransposeLine(_lines[i], out int newTranspose))
+                {
+                    _transpose = newTranspose;
+                }
+            }
+            UpdateTransposeLabel();
 
             // skip to the next valid note/chord (not a space or dash)
             var tokens = _tokenizedLines[_currentLineIndex];
