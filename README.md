@@ -45,6 +45,9 @@ Fairy Key is a virtual piano sheet reading tool for practicing playing piano usi
 
 > Fairy Key can automatically detect and load new **single** sheets without restarting the application.
 
+
+
+
 ---
 
 ## Fairy Key Sheet Format Guide
@@ -90,6 +93,17 @@ transposition -3
 
 ### Adding Notes
 Lastly, notes can be added after the metadata freely using virtual piano notation. Fairy Key recognizes playable notes and ignores non-playable notes such as spaces. Currently supported formats for chords are `[ ]` and `-` for spaces/pauses.
+
+
+## Demos
+<table align="center">
+  <tr>
+    <td align="center">
+      <video src="https://github.com/user-attachments/assets/f811cdc1-3dfa-46f0-9ac5-a93a9f0a47f3" width="600" controls></video>
+      Demo by <a href="https://www.twitch.tv/tevin_vr">tevin_vr</a> played in <a href="https://www.roblox.com/games/5593470048/Visual-Pianos">Visual Pianos</a>
+    </td>
+  </tr>
+</table>
 
 ---
 
