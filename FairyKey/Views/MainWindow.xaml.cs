@@ -23,7 +23,7 @@ namespace FairyKey.Views
         private readonly SheetLibrary _library;
 
         private List<string> _lines = new List<string> { };
-        private static readonly HashSet<char> _ignoredChars = new HashSet<char> { ' ', '-', '\'', '‌', '|', '’'};
+        private static readonly HashSet<char> _ignoredChars = new HashSet<char> { ' ', '-', '\'', '‌', '|', '’' };
         private Dictionary<int, HashSet<char>> _activeChords = new Dictionary<int, HashSet<char>>();
         private List<List<string>> _tokenizedLines = new List<List<string>>();
         private List<TextBlock> _renderedTextBlocks = new List<TextBlock>();
@@ -40,6 +40,7 @@ namespace FairyKey.Views
 
         // Config
         private bool _isPlaying = false;
+
         private int _transpose = 0;
         private bool _noobMode = false;
         private Sheet _currentSheet;
@@ -173,7 +174,6 @@ namespace FairyKey.Views
                 }
             }
         }
-
 
         private void ProcessChord(string chordToken, List<string> pressedKeys)
         {
@@ -419,7 +419,7 @@ namespace FairyKey.Views
                     _currentCharIndex++;
                 }
 
-                if (_currentCharIndex < tokens.Count) 
+                if (_currentCharIndex < tokens.Count)
                     break; // found valid note
 
                 // check next line
@@ -677,6 +677,7 @@ namespace FairyKey.Views
                 _tokenizedLines.Add(TokenizeLine(line));
             }
         }
+
         private bool IsChord(string token) => token.StartsWith("[") && token.EndsWith("]");
 
         private bool IsIgnoredChar(string token)
@@ -945,7 +946,7 @@ namespace FairyKey.Views
                     var editItem = new MenuItem { Header = "Edit" };
                     editItem.Click += (s, e) =>
                     {
-                        var editWindow = new NewSongWindow(_library, sheet.FilePath) { Owner = this };
+                        var editWindow = new NewSongWindow(_library, sheet.FilePath) { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
                         if (editWindow.ShowDialog() == true)
                         {
                             RefreshLibrary();
@@ -1088,8 +1089,7 @@ namespace FairyKey.Views
 
         private void NewSheetBtn_Click(object sender, RoutedEventArgs e)
         {
-            var newSongWindow = new NewSongWindow(_library);
-            newSongWindow.Owner = this;
+            var newSongWindow = new NewSongWindow(_library) { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
 
             if (newSongWindow.ShowDialog() == true && !string.IsNullOrEmpty(newSongWindow.CreatedFilePath))
             {
@@ -1191,8 +1191,7 @@ namespace FairyKey.Views
 
         private void AboutBtn_Click(object sender, RoutedEventArgs e)
         {
-            var aboutWindow = new About();
-            aboutWindow.Owner = this;
+            var aboutWindow = new About() { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
             aboutWindow.Show();
         }
 
