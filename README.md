@@ -80,7 +80,7 @@ To add a transposition indicator in a song, simply add it as a single line start
 ```
 Without specifying, the default transposition is always `0`. Transpositions can be added anywhere between or before notation lines.
 
-Additional formats also [supported](https://github.com/FairyKey/FairyKey/discussions/3):
+Additional formats also [supported](https://github.com/FairyKey/FairyKey/discussions/3#discussioncomment-14650256):
 ```
 Transpose +3
 transposition -3
