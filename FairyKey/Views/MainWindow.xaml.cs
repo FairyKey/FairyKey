@@ -22,9 +22,8 @@ namespace FairyKey.Views
         private string _libraryFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sheets");
         private readonly SheetLibrary _library;
 
-        // Sheet state
         private List<string> _lines = new List<string> { };
-
+        private static readonly HashSet<char> _ignoredChars = new HashSet<char> { ' ', '-', '\'', '‌', '|' };
         private Dictionary<int, HashSet<char>> _activeChords = new Dictionary<int, HashSet<char>>();
         private List<List<string>> _tokenizedLines = new List<List<string>>();
         private List<TextBlock> _renderedTextBlocks = new List<TextBlock>();
@@ -41,7 +40,6 @@ namespace FairyKey.Views
 
         // Config
         private bool _isPlaying = false;
-
         private int _transpose = 0;
         private bool _noobMode = false;
         private Sheet _currentSheet;
@@ -625,7 +623,7 @@ namespace FairyKey.Views
                 char c = line[i];
 
                 // Treat spaces and dashes as their own tokens ONLY if not inside a chord
-                if (c == ' ' || c == '-' || c == '\'' || c == '‌')
+                if (_ignoredChars.Contains(c))
                 {
                     tokens.Add(c.ToString());
                     i++;
@@ -671,7 +669,7 @@ namespace FairyKey.Views
 
         private bool IsIgnoredChar(string token)
         {
-            return token == " " || token == "-" || token == "'" || token == "‌";
+            return token.Length == 1 && _ignoredChars.Contains(token[0]);
         }
 
         private char[] GetChordNotes(string chordToken)
@@ -682,7 +680,7 @@ namespace FairyKey.Views
             string chordContent = chordToken.Trim('[', ']');
 
             // Filter out spaces, dashes, and apostrophes to get only the actual notes
-            var notes = chordContent.Where(ch => ch != ' ' && ch != '-' && ch != '\'' && ch != '‌').ToArray();
+            var notes = chordContent.Where(ch => !_ignoredChars.Contains(ch)).ToArray();
 
             return notes;
         }
