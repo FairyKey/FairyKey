@@ -9,9 +9,9 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Input;
 
 namespace FairyKey.Views
 {
@@ -41,6 +41,7 @@ namespace FairyKey.Views
 
         // Config
         private bool _isPlaying = false;
+
         private int _transpose = 0;
         private bool _noobMode = false;
         private Sheet _currentSheet;
@@ -337,6 +338,7 @@ namespace FairyKey.Views
         #endregion Note highlighting
 
         #region Sheet rendering
+
         private void MakeTextBlockClickable(TextBlock tb, int lineIndex)
         {
             tb.Cursor = System.Windows.Input.Cursors.Hand;
@@ -686,27 +688,40 @@ namespace FairyKey.Views
         }
 
         // Transpose detection v2
-        private readonly string[] TransposeKeywords = new[] { "transpose", "transposition" };
+        private readonly string[] TransposeKeywords = new[] { "tran", "octave" }; // "tran" should account for variants/misspellings
+
         private bool TryParseTransposeLine(string line, out int transposeValue)
         {
             transposeValue = 0;
             var trimmed = line.Trim();
 
-            // check if + or - followed by digit
-            var numberMatch = Regex.Match(trimmed, @"[+-]\d+");
-            if (!numberMatch.Success || !int.TryParse(numberMatch.Value, out transposeValue))
-                return false; 
+            // Search for keyword
+            bool containsKeyword = TransposeKeywords.Any(keyword => Regex.IsMatch(trimmed, $@"\b{keyword}\w*", RegexOptions.IgnoreCase));
 
-            // if line is exactly something like +2 or -2, always valid
-            if (trimmed == numberMatch.Value)
+            // Search for a transpose value
+            var signedNumberFound = Regex.Match(trimmed, @"[+-]\d+");
+            var unsignedNumberFound = Regex.Match(trimmed, @"\b\d+\b");
+
+            if (signedNumberFound.Success && int.TryParse(signedNumberFound.Value, out transposeValue))
+            {
+                // remove decorations like * and ()
+                string cleaned = Regex.Replace(trimmed, @"[\*\(\)]", "").Trim();
+
+                if (cleaned == signedNumberFound.Value || containsKeyword)
+                    return true;
+            }
+            else if (containsKeyword && unsignedNumberFound.Success && int.TryParse(unsignedNumberFound.Value, out transposeValue))
+            {
+                return true; // (e.g. Transpose by 2)
+            }
+
+            if (containsKeyword)
+            {
+                transposeValue = 0; // no value found but still has the keyword line
                 return true;
+            }
 
-            // if a keyword exists in addition
-            bool containsKeyword = TransposeKeywords.Any(keyword =>
-                Regex.IsMatch(trimmed, $@"\b{Regex.Escape(keyword)}\b", RegexOptions.IgnoreCase)
-            );
-
-            return containsKeyword;
+            return false;
         }
 
         #endregion Keyboard input vs Notes processing
