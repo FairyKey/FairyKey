@@ -187,7 +187,7 @@ namespace FairyKey.Views
                 bool matched = false;
                 foreach (var key in pressedKeys)
                 {
-                    if (key.Length == 1 && key[0].ToString().Equals(compareToken, StringComparison.OrdinalIgnoreCase))
+                    if (key.Length == 1 && key[0].ToString().Equals(compareToken))
                     {
                         matched = true;
                         break;
