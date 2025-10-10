@@ -23,7 +23,7 @@ namespace FairyKey.Views
         private readonly SheetLibrary _library;
 
         private List<string> _lines = new List<string> { };
-        private static readonly HashSet<char> _ignoredChars = new HashSet<char> { ' ', '-', '\'', '‌', '|' };
+        private static readonly HashSet<char> _ignoredChars = new HashSet<char> { ' ', '-', '\'', '‌', '|', '’'};
         private Dictionary<int, HashSet<char>> _activeChords = new Dictionary<int, HashSet<char>>();
         private List<List<string>> _tokenizedLines = new List<List<string>>();
         private List<TextBlock> _renderedTextBlocks = new List<TextBlock>();
