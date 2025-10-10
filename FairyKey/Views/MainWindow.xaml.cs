@@ -410,15 +410,19 @@ namespace FairyKey.Views
             UpdateTransposeLabel();
 
             // skip to the next valid note/chord (not a space or dash)
-            var tokens = _tokenizedLines[_currentLineIndex];
-            while (_currentCharIndex < tokens.Count && IsIgnoredChar(tokens[_currentCharIndex]))
+            while (_currentLineIndex < _lines.Count)
             {
-                _currentCharIndex++;
-            }
+                var tokens = _tokenizedLines[_currentLineIndex];
 
-            // move to next line if at the end of the current line
-            if (_currentCharIndex >= tokens.Count)
-            {
+                while (_currentCharIndex < tokens.Count && IsIgnoredChar(tokens[_currentCharIndex]))
+                {
+                    _currentCharIndex++;
+                }
+
+                if (_currentCharIndex < tokens.Count) 
+                    break; // found valid note
+
+                // check next line
                 _currentLineIndex++;
                 _currentCharIndex = 0;
 
