@@ -84,7 +84,7 @@ namespace FairyKey.Views
             // Ctrl+R to reset current song during play mode - Add similar to windows.input event later?
             if (e.Control && e.KeyCode == System.Windows.Forms.Keys.R)
             {
-                Dispatcher.Invoke(() => ResetCurrentSong());
+                Dispatcher.Invoke(ResetCurrentSong);
                 e.Handled = true;
                 return;
             }
@@ -101,6 +101,7 @@ namespace FairyKey.Views
                     RenderSheetStack();
                 else
                     UpdateHighlighting();
+
                 AnimateCenterActiveLineStack();
             }
 
@@ -110,27 +111,12 @@ namespace FairyKey.Views
 
             var tokens = _tokenizedLines[_currentLineIndex];
 
-            // Skip spaces or dashes at the start
-            while (_currentCharIndex < tokens.Count && IsIgnoredChar(tokens[_currentCharIndex]))
-            {
-                _currentCharIndex++;
-            }
+            // Check for ignored chars at the start
+            SkipIgnoredChars(tokens);
 
-            // Check if end of the line
             if (_currentCharIndex >= tokens.Count)
             {
-                _currentLineIndex++;
-                _currentCharIndex = 0;
-
-                while (_currentLineIndex < _lines.Count && TryParseTransposeLine(_lines[_currentLineIndex], out int newTranspose))
-                {
-                    _transpose = newTranspose;
-                    UpdateTransposeLabel();
-                    _currentLineIndex++;
-                }
-
-                UpdateHighlighting();
-                AnimateCenterActiveLineStack();
+                MoveToNextLine();
                 return;
             }
 
@@ -138,95 +124,91 @@ namespace FairyKey.Views
             var pressedKeys = GetPressedKeys(e);
             PressedTest.Content = string.Join(",", pressedKeys);
 
-            // if is chord
-            if (currentToken.StartsWith("[") && currentToken.EndsWith("]"))
+            if (IsChord(currentToken))
             {
-                int chordIndex = _currentCharIndex;
-
-                if (!_activeChords.ContainsKey(chordIndex))
-                {
-                    var chordChars = GetChordNotes(currentToken);
-
-                    if (_noobMode)
-                        chordChars = chordChars
-                            .SelectMany(c => new[] { char.ToLower(c), char.ToUpper(c) })
-                            .Distinct()
-                            .ToArray();
-
-                    _activeChords[chordIndex] = new HashSet<char>(chordChars);
-                }
-
-                var remainingKeys = _activeChords[chordIndex];
-
-                foreach (var key in pressedKeys)
-                {
-                    if (key.Length == 1 && remainingKeys.Contains(key[0]))
-                        remainingKeys.Remove(key[0]);
-                }
-
-                // when no more remaining keys = chord completed
-                if (remainingKeys.Count == 0)
-                {
-                    _currentCharIndex++;
-                    _activeChords.Remove(chordIndex);
-
-                    // Skip ignored chars after completing chord
-                    while (_currentCharIndex < tokens.Count && IsIgnoredChar(tokens[_currentCharIndex]))
-                    {
-                        _currentCharIndex++;
-                    }
-                }
+                ProcessChord(currentToken, pressedKeys);
             }
-            // if single note
-            else if (!IsIgnoredChar(currentToken))
+            else
             {
-                string compareToken = currentToken;
-
-                // check if any pressed key matches
-                bool matched = false;
-                foreach (var key in pressedKeys)
-                {
-                    if (key.Length == 1 && key[0].ToString().Equals(compareToken))
-                    {
-                        matched = true;
-                        break;
-                    }
-                    //// fallback exact match method (pressedKeys should do this ideally)
-                    //if (key == compareToken)
-                    //{
-                    //    matched = true;
-                    //    break;
-                    //}
-                }
-
-                if (matched)
-                {
-                    _currentCharIndex++;
-
-                    // skip ignored chars after matching
-                    while (_currentCharIndex < tokens.Count && IsIgnoredChar(tokens[_currentCharIndex]))
-                    {
-                        _currentCharIndex++;
-                    }
-                }
+                ProcessSingleNote(currentToken, pressedKeys);
             }
 
-            // move to next line once done with current line
+            // If line is finished
             if (_currentCharIndex >= tokens.Count)
-            {
-                _currentLineIndex++;
-                _currentCharIndex = 0;
-
-                while (_currentLineIndex < _lines.Count && TryParseTransposeLine(_lines[_currentLineIndex], out int newTranspose))
-                {
-                    _transpose = newTranspose;
-                    UpdateTransposeLabel();
-                    _currentLineIndex++;
-                }
-            }
+                MoveToNextLine();
 
             UpdateHighlighting();
             AnimateCenterActiveLineStack();
+        }
+
+
+        private void SkipIgnoredChars(List<string> tokens)
+        {
+            while (_currentCharIndex < tokens.Count && IsIgnoredChar(tokens[_currentCharIndex]))
+                _currentCharIndex++;
+        }
+
+
+        private void ProcessChord(string chordToken, List<string> pressedKeys)
+        {
+            int chordIndex = _currentCharIndex;
+
+            if (!_activeChords.ContainsKey(chordIndex))
+            {
+                var chordChars = GetChordNotes(chordToken);
+
+                if (_noobMode)
+                    chordChars = chordChars
+                        .SelectMany(c => new[] { char.ToLower(c), char.ToUpper(c) })
+                        .Distinct()
+                        .ToArray();
+
+                _activeChords[chordIndex] = new HashSet<char>(chordChars);
+            }
+
+            var remainingKeys = _activeChords[chordIndex];
+
+            foreach (var key in pressedKeys)
+                if (key.Length == 1 && remainingKeys.Contains(key[0]))
+                    remainingKeys.Remove(key[0]);
+
+            if (remainingKeys.Count == 0)
+            {
+                _currentCharIndex++;
+                _activeChords.Remove(chordIndex);
+
+                var tokens = _tokenizedLines[_currentLineIndex];
+                SkipIgnoredChars(tokens);
+            }
+        }
+
+        private void ProcessSingleNote(string token, List<string> pressedKeys)
+        {
+            if (pressedKeys.Any(k => k.Length == 1 && k[0].ToString() == token))
+            {
+                _currentCharIndex++;
+                var tokens = _tokenizedLines[_currentLineIndex];
+                SkipIgnoredChars(tokens);
+            }
+        }
+
+        private void MoveToNextLine()
+        {
+            _currentLineIndex++;
+            _currentCharIndex = 0;
+
+            while (_currentLineIndex < _lines.Count && TryParseTransposeLine(_lines[_currentLineIndex], out int newTranspose))
+            {
+                _transpose = newTranspose;
+                UpdateTransposeLabel();
+                _currentLineIndex++;
+            }
+
+            if (_currentLineIndex >= _lines.Count)
+                return;
+
+            var tokens = _tokenizedLines[_currentLineIndex];
+            SkipIgnoredChars(tokens); // do a check for ignored chars at the start of the new line!
         }
 
         #endregion Global Hook Functions
@@ -606,7 +588,7 @@ namespace FairyKey.Views
 
         #endregion Sheet rendering
 
-        #region Keyboard input vs Notes processing
+        #region Keyboard and sheet notes recognization
 
         /// <summary>
         /// Returns a list of tokens (single note, chord, space/dash) for a line.
@@ -666,6 +648,7 @@ namespace FairyKey.Views
                 _tokenizedLines.Add(TokenizeLine(line));
             }
         }
+        private bool IsChord(string token) => token.StartsWith("[") && token.EndsWith("]");
 
         private bool IsIgnoredChar(string token)
         {
@@ -722,7 +705,7 @@ namespace FairyKey.Views
             return false;
         }
 
-        #endregion Keyboard input vs Notes processing
+        #endregion Keyboard and sheet notes recognization
 
         #region Key mapping + Noob mode
 
