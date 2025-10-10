@@ -102,17 +102,16 @@ namespace FairyKey.Views
                 else
                     UpdateHighlighting();
 
-                AnimateCenterActiveLineStack();
+                AnimateCenterActiveLineStack(); // maybe not needed?
             }
 
-            // Stop if reached the end
+            SkipIgnoredLines(); // scans through the line and skips over ignored items (ignored chars/transpose)
+
+            // Last line reached! - stop here
             if (_currentLineIndex >= _lines.Count)
                 return;
 
             var tokens = _tokenizedLines[_currentLineIndex];
-
-            // Check for ignored chars at the start
-            SkipIgnoredChars(tokens);
 
             if (_currentCharIndex >= tokens.Count)
             {
@@ -141,11 +140,38 @@ namespace FairyKey.Views
             AnimateCenterActiveLineStack();
         }
 
-
-        private void SkipIgnoredChars(List<string> tokens)
+        /// <summary>
+        /// Searches through line for playable tokens, if none, goes to next line
+        /// </summary>
+        private void SkipIgnoredLines()
         {
-            while (_currentCharIndex < tokens.Count && IsIgnoredChar(tokens[_currentCharIndex]))
-                _currentCharIndex++;
+            while (_currentLineIndex < _lines.Count)
+            {
+                var tokens = _tokenizedLines[_currentLineIndex];
+
+                // check for ignored characters at the start
+                while (_currentCharIndex < tokens.Count && IsIgnoredChar(tokens[_currentCharIndex]))
+                    _currentCharIndex++;
+
+                // If the whole line is ignored characters, move to next line
+                if (_currentCharIndex >= tokens.Count)
+                {
+                    _currentLineIndex++;
+                    _currentCharIndex = 0;
+
+                    // Skip transpose lines
+                    while (_currentLineIndex < _lines.Count && TryParseTransposeLine(_lines[_currentLineIndex], out int newTranspose))
+                    {
+                        _transpose = newTranspose;
+                        UpdateTransposeLabel();
+                        _currentLineIndex++;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
 
 
@@ -178,7 +204,7 @@ namespace FairyKey.Views
                 _activeChords.Remove(chordIndex);
 
                 var tokens = _tokenizedLines[_currentLineIndex];
-                SkipIgnoredChars(tokens);
+                SkipIgnoredLines();
             }
         }
 
@@ -188,7 +214,7 @@ namespace FairyKey.Views
             {
                 _currentCharIndex++;
                 var tokens = _tokenizedLines[_currentLineIndex];
-                SkipIgnoredChars(tokens);
+                SkipIgnoredLines();
             }
         }
 
@@ -208,7 +234,7 @@ namespace FairyKey.Views
                 return;
 
             var tokens = _tokenizedLines[_currentLineIndex];
-            SkipIgnoredChars(tokens); // do a check for ignored chars at the start of the new line!
+            SkipIgnoredLines(); // do a check for ignored chars at the start of the new line!
         }
 
         #endregion Global Hook Functions
@@ -420,7 +446,6 @@ namespace FairyKey.Views
             _lastHighlightedLine = -1;
             _lastHighlightedChar = -1;
 
-            PreTokenizeLines();
             TitleLabel.Content = "Unknown song";
 
             // Extra spacing for top
@@ -957,8 +982,9 @@ namespace FairyKey.Views
 
             _currentSheet = (Sheet)btn.Tag;
             _lines = Sheet.Notes.ToList();
-            ResetCurrentSong();
+            PreTokenizeLines();
             RenderSheetStack();
+            ResetCurrentSong();
         }
 
         #endregion Library sheets
@@ -1017,6 +1043,7 @@ namespace FairyKey.Views
                 _currentLineIndex++;
             }
 
+            SkipIgnoredLines();
             UpdateHighlighting();
             SheetScrollViewer.ScrollToTop();
             AnimateCenterActiveLineStack();
