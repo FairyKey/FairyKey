@@ -82,12 +82,13 @@ Without specifying, the default transposition is always `0`. Transpositions can 
 
 Additional formats also [supported](https://github.com/FairyKey/FairyKey/discussions/3):
 ```
-Transpose +1
-Transposition: +2
--2 (Transpose 5)
-transpose: +2
-(Transpose +3)
+Transpose +3
 transposition -3
+Transposition is -3
+Transpose by 3
+*No Transposition*
+-3 Octave 3 (+9)
+-3 (transpose 6)
 ```
 
 
