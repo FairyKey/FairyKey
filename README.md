@@ -34,18 +34,20 @@ Fairy Key is a virtual piano sheet reading tool for practicing playing piano usi
 5. Click a sheet to load it
 6. Press the **Play** button at the top to activate **Play Mode**
 7. (*Recommended*) enable **Pin Mode** from the ☰ menu to overlay Fairy Key on top of your virtual piano application
-8. Switch to your virtual piano application and play along with the sheet! 
-
+8. Switch to your virtual piano application and play along with the sheet!
+   
 > Applications running as Admin won't pass input to Fairy Key unless Fairy Key is also running as Admin (e.g. Roblox opened as Admin won't pass inputs to Fairy Key)
 
-### Importing multiple sheet
+### Shortcuts
+- `Ctrl + R` Restarts the current sheet during Play Mode
+- `Ctrl + Mousewheel` Scroll up and down to adjust font size (zoom)
+
+### Importing multiple sheets
 1. Place your sheet `.txt` files in the `Sheets` folder (created in the same directory automatically on first launch)
 2. Launch `FairyKey.exe`
 3. Sheets will appear in the **Library**
 
 > Fairy Key can automatically detect and load new **single** sheets without restarting the application.
-
-
 
 
 ---
