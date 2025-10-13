@@ -112,7 +112,7 @@ Lastly, notes can be added after the metadata freely using virtual piano notatio
   <tr>
     <!-- Bottom row: Captions -->
     <td align="center">
-      Demo by [Yakku](https://www.roblox.com/users/5178675/profile) played in <a href="https://www.roblox.com/games/5593470048/Visual-Pianos">Visual Pianos</a>
+      Demo by <a href="https://www.roblox.com/users/5178675/profile">Yakku</a> played in <a href="https://www.roblox.com/games/5593470048/Visual-Pianos">Visual Pianos</a>
     </td>
     <td align="center">
       Demo by <a href="https://www.twitch.tv/tevin_vr">tevin_vr</a> played in <a href="https://www.roblox.com/games/5593470048/Visual-Pianos">Visual Pianos</a>
