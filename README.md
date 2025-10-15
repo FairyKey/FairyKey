@@ -19,11 +19,11 @@ Fairy Key is a virtual piano sheet reading tool for practicing playing piano usi
 - Restart the sheet and scroll to the top at any time
 
 ## Installation
-1. Download the latest release from [Releases](https://github.com/FairyKey/FairyKey/releases)
+1. Download the latest release directly from the [official website](https://fairykey.app/) or from Github's [Releases](https://github.com/FairyKey/FairyKey/releases) page
 2. Extract the ZIP anywhere you like 
 3. Run `FairyKey.exe` 
 
-> Currently only Windows 10/11 are supported and [.NET 8.0 runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) is required to run.
+> Currently only Windows 10 and 11 are supported and [.NET 8.0 runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) is required to run.
 
 ## Usage
 
@@ -39,11 +39,13 @@ Fairy Key is a virtual piano sheet reading tool for practicing playing piano usi
 > Applications running as Admin won't pass input to Fairy Key unless Fairy Key is also running as Admin (e.g. Roblox opened as Admin won't pass inputs to Fairy Key)
 
 ### Shortcuts
-- `Ctrl + R` Restarts the current sheet during Play Mode
-- `Ctrl + Mousewheel` Scroll up and down to adjust font size (zoom)
+- `Ctrl + R`: Restarts the current sheet during Play Mode
+- `Ctrl + Mousewheel`: Scroll up and down to adjust font size (zoom)
 
 ### Importing multiple sheets
-1. Place your sheet `.txt` files in the `Sheets` folder (created in the same directory automatically on first launch)
+Fairy Key comes with an example `Sheets` folder, which is located in the root directory of `FairyKey.exe`. This folder is also automatically created if it does not exist. Additional folders can be used within the `Sheets` folder for further organization (currently a folder depth of `1` is supported).
+
+1. Place your sheet `.txt` file(s) in the `Sheets` folder
 2. Launch `FairyKey.exe`
 3. Sheets will appear in the **Library**
 
