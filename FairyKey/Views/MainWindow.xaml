@@ -119,14 +119,13 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
 
                 <!-- change mode dropdown menu -->
-                <ComboBox Height="25" Width="97" Background="{StaticResource Black}" 
-                          Foreground="{StaticResource Black}" SelectedIndex="0">
-                    <ComboBoxItem Content="Follow mode" />
-                    <ComboBoxItem Content="Page mode" />
-                </ComboBox>
+                <ComboBox x:Name="ModeSelectComboBox" Height="25" Width="120"
+                          Background="{StaticResource Black}" Foreground="{StaticResource Black}"
+                          ItemsSource="{Binding Modes}" SelectedItem="{Binding CurrentMode, Mode=TwoWay}"
+                          SelectionChanged="ComboBox_SelectionChanged"/>
 
                 <!-- Displays last pressed key -->
-                <Label Visibility="Visible" x:Name="PressedTest" Foreground="{StaticResource White}" 
+                <Label Visibility="Visible" x:Name="PressedTest" Foreground="{StaticResource White}"
                        Content="" Margin="0, 0, 0, 0" Width="25" HorizontalContentAlignment="Right" VerticalAlignment="Center" />
 
                 <!-- Hamburger menu button (+ context menus) -->

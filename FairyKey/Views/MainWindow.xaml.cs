@@ -3,6 +3,7 @@ using FairyKey.Models;
 using Gma.System.MouseKeyHook;
 using Material.Icons;
 using Material.Icons.WPF;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -22,6 +23,7 @@ namespace FairyKey.Views
         private string _libraryFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sheets");
         private readonly SheetLibrary _library;
 
+        // Follow mode
         private List<string> _lines = new List<string> { };
         private static readonly HashSet<char> _ignoredChars = new HashSet<char> { ' ', '-', '\'', '‌', '|', '’' };
         private Dictionary<int, HashSet<char>> _activeChords = new Dictionary<int, HashSet<char>>();
@@ -39,8 +41,15 @@ namespace FairyKey.Views
         private Dictionary<string, bool> _folderExpandedState = new Dictionary<string, bool>();
 
         // Config
-        private bool _isPlaying = false;
+        public enum PlayMode
+        {
+            Follow,
+            PageFlip
+        }
+        public List<PlayMode> Modes { get; } = Enum.GetValues(typeof(PlayMode)).Cast<PlayMode>().ToList();
+        public PlayMode CurrentMode { get; set; } = PlayMode.Follow;
 
+        private bool _isPlaying = false;
         private int _transpose = 0;
         private bool _noobMode = false;
         private Sheet _currentSheet;
@@ -52,6 +61,7 @@ namespace FairyKey.Views
             _library = new SheetLibrary(_libraryFolder);
             InitializeLibraryWatcher();
             RefreshLibrary();
+            DataContext = this;
         }
 
         #region Global Hook Functions
@@ -1209,6 +1219,11 @@ namespace FairyKey.Views
 
                 UpdateFontSizes();
             }
+        }
+
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Console.WriteLine($"Mode changed to: {CurrentMode.ToString()}");
         }
 
         #endregion UI event handlers
